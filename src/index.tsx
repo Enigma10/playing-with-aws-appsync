@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync";
+import Amplify, { Auth } from 'aws-amplify';
+
 import { ApolloProvider } from "react-apollo";
 // import { Rehydrated } from "aws-appsync-react"; // this needs to also be installed when working with React
 
@@ -8,14 +10,15 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import AppSyncConfig from "./aws-exports";
 
+Amplify.configure(AppSyncConfig);
+
 const client = new AWSAppSyncClient({
   disableOffline: true,
   url: AppSyncConfig.aws_appsync_graphqlEndpoint,
   region: AppSyncConfig.aws_appsync_region,
   auth: {
-    type: AppSyncConfig.aws_appsync_authenticationType as AUTH_TYPE,
-    apiKey: AppSyncConfig.aws_appsync_apiKey
-    // jwtToken: async () => token, // Required when you use Cognito UserPools OR OpenID Connect. token object is obtained previously
+    type: AUTH_TYPE.AMAZON_COGNITO_USER_POOLS,
+    jwtToken: async () => (await Auth.currentSession()).getIdToken().getJwtToken(),
   }
 });
 
